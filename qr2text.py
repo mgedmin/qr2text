@@ -203,8 +203,11 @@ class QR:
         # path.get('stroke') should be '#000'
         # path.get('d') is the QR code itself, encoded as drawing commands
         transform = path.get('transform')
-        m = TRANSFORM_SCALE_RX.match(transform)
-        scale = int(m.group(1))
+        if transform:
+            m = TRANSFORM_SCALE_RX.match(transform)
+            scale = int(m.group(1))
+        else:
+            scale = 1
         size = width // scale
         qr = cls(size)
         d = path.get('d')
