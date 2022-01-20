@@ -133,7 +133,7 @@ class Canvas:
         right = self.width
         while right > left and self.column_is_blank(right - 1):
             right -= 1
-        return self.__class__(right - left, bottom - top,[
+        return self.__class__(right - left, bottom - top, [
             row[left:right] for row in self.pixels[top:bottom]
         ])
 
