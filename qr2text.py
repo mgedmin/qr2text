@@ -70,7 +70,7 @@ class PathParser:
             elif kind == 'comma':
                 # let's just skip these
                 continue
-            else:
+            else:  # pragma: nocover
                 assert False, f'did not expect {kind}'
         if command:
             yield tuple(command)

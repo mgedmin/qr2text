@@ -1,6 +1,6 @@
 import pytest
 
-from qr2text import PathParser, Canvas
+from qr2text import Canvas, Error, PathParser
 
 
 @pytest.mark.parametrize("path, expected", [
@@ -16,6 +16,14 @@ from qr2text import PathParser, Canvas
 ])
 def test_tokenize(path, expected):
     assert list(PathParser.tokenize(path)) == expected
+
+
+@pytest.mark.parametrize("path", [
+    'qwerty',
+])
+def test_tokenize_error(path):
+    with pytest.raises(Error):
+        list(PathParser.tokenize(path))
 
 
 @pytest.mark.parametrize("d, expected", [
@@ -43,11 +51,24 @@ def test_Canvas():
     canvas.horizontal_line(0, 0.5, 5)
     canvas.horizontal_line(1, 1.5, 3)
     canvas.horizontal_line(2, 2.5, 1)
-    assert str(canvas) == (
-        'XXXXX\n'
-        '.XXX.\n'
-        '..X..'
-    )
+    assert str(canvas) == '\n'.join([
+        'XXXXX',
+        '.XXX.',
+        '..X..',
+    ])
+
+
+def test_Canvas_trim():
+    canvas = Canvas(5, 3)
+    canvas.horizontal_line(1, 1.5, 3)
+    assert str(canvas) == '\n'.join([
+        '.....',
+        '.XXX.',
+        '.....',
+    ])
+    assert str(canvas.trim()) == '\n'.join([
+        'XXX',
+    ])
 
 
 def test_Canvas_unicode():
@@ -55,7 +76,7 @@ def test_Canvas_unicode():
     canvas.horizontal_line(0, 0.5, 5)
     canvas.horizontal_line(1, 1.5, 3)
     canvas.horizontal_line(2, 2.5, 1)
-    assert canvas.to_unicode_blocks() == (
-        '▀███▀\n'
-        '  ▀  '
-    )
+    assert canvas.to_unicode_blocks() == '\n'.join([
+        '▀███▀',
+        '  ▀  ',
+    ])
