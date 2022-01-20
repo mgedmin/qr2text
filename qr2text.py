@@ -21,6 +21,11 @@ HALF_CHARS = ' \u2580\u2584\u2588'  # blank, upper, lower, full block
 INV_FULL_CHARS = FULL_CHARS[::-1]
 INV_HALF_CHARS = HALF_CHARS[::-1]
 
+CHARS_FOR_TERMINAL_BACKGROUND = {
+    'black': INV_HALF_CHARS,
+    'white': HALF_CHARS,
+}
+
 SVG_NS = '{http://www.w3.org/2000/svg}'
 
 TRANSFORM_SCALE_RX = re.compile(r'^scale[(](\d+)[)]$')
@@ -181,8 +186,8 @@ class QR:
         self.size = size
         self.canvas = Canvas(size, size)
 
-    def to_ascii_art(self):
-        return self.canvas.to_unicode_blocks(INV_HALF_CHARS)
+    def to_ascii_art(self, chars=INV_HALF_CHARS):
+        return self.canvas.to_unicode_blocks(chars)
 
     @classmethod
     def from_svg(cls, fileobj):
@@ -220,13 +225,19 @@ def main():
         description="Convert PyQRCode SVG images to ASCII art")
     parser.add_argument("--version", action="version",
                         version="%(prog)s version " + __version__)
+    parser.add_argument("--black-background", action="store_const",
+                        dest='background', const='black', default='black',
+                        help='terminal is white on black (default)')
+    parser.add_argument("--white-background", action="store_const",
+                        dest='background', const='white',
+                        help='terminal is white on black')
     parser.add_argument("filename", type=argparse.FileType('r'))
     args = parser.parse_args()
 
     try:
         with args.filename as fp:
             qr = QR.from_svg(fp)
-        print(qr.to_ascii_art())
+        print(qr.to_ascii_art(CHARS_FOR_TERMINAL_BACKGROUND[args.background]))
     except (Error, KeyboardInterrupt) as e:
         sys.exit(e)
 

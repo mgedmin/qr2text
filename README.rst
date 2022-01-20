@@ -11,3 +11,31 @@ Usage::
 
     qr2text FILENAME.svg
 
+Example::
+
+    $ python3
+    >>> import pyqrcode
+    >>> qr = pyqrcode.create('Hello world!')
+    >>> qr.svg('hello.svg')
+
+    $ qr2text --white-background hello.svg
+
+
+        █▀▀▀▀▀█ ▀▄█▄▀▄▀▀▄ █▀▀▀▀▀█
+        █ ███ █ ▀ █▄  █   █ ███ █
+        █ ▀▀▀ █ ▀▀▄▄▀ ▀ ▄ █ ▀▀▀ █
+        ▀▀▀▀▀▀▀ █▄█▄▀▄▀▄▀ ▀▀▀▀▀▀▀
+         ▄▄▄▄▀▀ ▄▀▄▀██▀▀▀ ▀▄█▄▀ ▀
+        ▀▀▀▀▀▄▀▀▄▀▄▀▄ ▀▀█▀▄ ▀█ ██
+        ▄█▀▄▀ ▀▀▄  ▄██▄▀  ▀▄ █▄ ▀
+        █   ▄ ▀▀▀█▄  ██▀█▀██▀█▄▀█
+        ▀  ▀ ▀▀▀▄█▄▀▄█▀▀█▀▀▀███ ▄
+        █▀▀▀▀▀█ ▄  █▀▄▀██ ▀ █   █
+        █ ███ █  █▀▄ ▄  ▀▀█▀▀▀█▀▄
+        █ ▀▀▀ █  ▄▀▀▀▀  ▀ ▄█▄█  █
+        ▀▀▀▀▀▀▀  ▀ ▀▀  ▀▀ ▀ ▀   ▀
+
+
+Note: you may have to tell qr2text whether your terminal is black-on-white
+(--white-background) or white-on-black (--black-background).  Some QR code
+scanners don't care, but others will refuse to recognize inverted QR codes.
