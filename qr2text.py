@@ -265,7 +265,8 @@ def main():
                         help='remove empty border')
     parser.add_argument("--pad", type=int, default=0,
                         help='pad with empty border')
-    parser.add_argument("filename", type=argparse.FileType('r'))
+    parser.add_argument("filename", type=argparse.FileType('r'),
+                        help='SVG file with the QR code (use - for stdin)')
     args = parser.parse_args()
 
     try:
