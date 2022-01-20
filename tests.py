@@ -71,6 +71,22 @@ def test_Canvas_trim():
     ])
 
 
+def test_Canvas_pad():
+    canvas = Canvas(5, 3)
+    canvas.horizontal_line(0, 0.5, 5)
+    canvas.horizontal_line(1, 1.5, 3)
+    canvas.horizontal_line(2, 2.5, 1)
+    assert str(canvas.pad(1, 2, 3, 4)) == '\n'.join([
+        '...........',
+        '....XXXXX..',
+        '.....XXX...',
+        '......X....',
+        '...........',
+        '...........',
+        '...........',
+    ])
+
+
 def test_Canvas_unicode():
     canvas = Canvas(5, 3)
     canvas.horizontal_line(0, 0.5, 5)

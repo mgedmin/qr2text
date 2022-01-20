@@ -143,6 +143,21 @@ class Canvas:
             row[left:right] for row in self.pixels[top:bottom]
         ])
 
+    def pad(self, top, right, bottom, left):
+        assert top >= 0
+        assert right >= 0
+        assert bottom >= 0
+        assert left >= 0
+        new_width = self.width + left + right
+        new_height = self.height + top + bottom
+        left_pad = [0] * left
+        right_pad = [0] * right
+        top_pad = [[0] * new_width for _ in range(top)]
+        bottom_pad = [[0] * new_width for _ in range(bottom)]
+        return self.__class__(new_width, new_height, top_pad + [
+            left_pad + row + right_pad for row in self.pixels
+        ] + bottom_pad)
+
 
 class Path:
 
@@ -187,10 +202,12 @@ class QR:
         self.size = size
         self.canvas = Canvas(size, size)
 
-    def to_ascii_art(self, chars=INV_HALF_CHARS, big=False, trim=False):
+    def to_ascii_art(self, chars=INV_HALF_CHARS, big=False, trim=False, pad=0):
         canvas = self.canvas
         if trim:
             canvas = canvas.trim()
+        if pad:
+            canvas = canvas.pad(pad, pad, pad, pad)
         if big:
             return canvas.to_ascii_art(chars[::3], 2)
         else:
@@ -244,6 +261,8 @@ def main():
     parser.add_argument("--trim", action="store_true",
                         dest='trim', default=False,
                         help='remove empty border')
+    parser.add_argument("--pad", type=int, default=0,
+                        help='pad with empty border')
     parser.add_argument("filename", type=argparse.FileType('r'))
     args = parser.parse_args()
 
@@ -251,7 +270,7 @@ def main():
         with args.filename as fp:
             qr = QR.from_svg(fp)
         print(qr.to_ascii_art(CHARS_FOR_TERMINAL_BACKGROUND[args.background],
-                              big=args.big, trim=args.trim))
+                              big=args.big, trim=args.trim, pad=args.pad))
     except (Error, KeyboardInterrupt) as e:
         sys.exit(e)
 
