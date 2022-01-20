@@ -101,9 +101,9 @@ class Canvas:
                 if 0 <= x < self.width:
                     self.pixels[y][x] = 1
 
-    def to_ascii_art(self, chars=FULL_CHARS):
+    def to_ascii_art(self, chars=FULL_CHARS, xscale=1):
         return '\n'.join(
-            ''.join(chars[px] for px in row) for row in self.pixels)
+            ''.join(chars[px] * xscale for px in row) for row in self.pixels)
 
     def to_unicode_blocks(self, chars=HALF_CHARS):
         pixels = self.pixels
@@ -186,8 +186,14 @@ class QR:
         self.size = size
         self.canvas = Canvas(size, size)
 
-    def to_ascii_art(self, chars=INV_HALF_CHARS):
-        return self.canvas.to_unicode_blocks(chars)
+    def to_ascii_art(self, chars=INV_HALF_CHARS, big=False, trim=False):
+        canvas = self.canvas
+        if trim:
+            canvas = canvas.trim()
+        if big:
+            return canvas.to_ascii_art(chars[::3], 2)
+        else:
+            return canvas.to_unicode_blocks(chars)
 
     @classmethod
     def from_svg(cls, fileobj):
@@ -228,16 +234,23 @@ def main():
     parser.add_argument("--black-background", action="store_const",
                         dest='background', const='black', default='black',
                         help='terminal is white on black (default)')
-    parser.add_argument("--white-background", action="store_const",
+    parser.add_argument("--white-background", "--invert", action="store_const",
                         dest='background', const='white',
                         help='terminal is white on black')
+    parser.add_argument("--big", action="store_true",
+                        dest='big', default=False,
+                        help='use full unicode blocks instead of half blocks')
+    parser.add_argument("--trim", action="store_true",
+                        dest='trim', default=False,
+                        help='remove empty border')
     parser.add_argument("filename", type=argparse.FileType('r'))
     args = parser.parse_args()
 
     try:
         with args.filename as fp:
             qr = QR.from_svg(fp)
-        print(qr.to_ascii_art(CHARS_FOR_TERMINAL_BACKGROUND[args.background]))
+        print(qr.to_ascii_art(CHARS_FOR_TERMINAL_BACKGROUND[args.background],
+                              big=args.big, trim=args.trim))
     except (Error, KeyboardInterrupt) as e:
         sys.exit(e)
 
