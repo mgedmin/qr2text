@@ -19,13 +19,7 @@ class Error(Exception):
 
 FULL_CHARS = ' \u2588'
 HALF_CHARS = ' \u2580\u2584\u2588'  # blank, upper, lower, full block
-INV_FULL_CHARS = FULL_CHARS[::-1]
-INV_HALF_CHARS = HALF_CHARS[::-1]
 
-CHARS_FOR_TERMINAL_BACKGROUND = {
-    'black': INV_HALF_CHARS,
-    'white': HALF_CHARS,
-}
 
 SVG_NS = '{http://www.w3.org/2000/svg}'
 
@@ -158,6 +152,11 @@ class Canvas:
             left_pad + row + right_pad for row in self.pixels
         ] + bottom_pad)
 
+    def invert(self):
+        return self.__class__(self.width, self.height, [
+            [1 - px for px in row] for row in self.pixels
+        ])
+
 
 class Path:
 
@@ -202,12 +201,15 @@ class QR:
         self.size = size
         self.canvas = Canvas(size, size)
 
-    def to_ascii_art(self, chars=INV_HALF_CHARS, big=False, trim=False, pad=0):
+    def to_ascii_art(self, chars=HALF_CHARS, big=False, trim=False, pad=0,
+                     invert=False):
         canvas = self.canvas
         if trim:
             canvas = canvas.trim()
         if pad:
             canvas = canvas.pad(pad, pad, pad, pad)
+        if invert:
+            canvas = canvas.invert()
         if big:
             return canvas.to_ascii_art(chars[::3], 2)
         else:
@@ -249,11 +251,11 @@ def main():
         description="Convert PyQRCode SVG images to ASCII art")
     parser.add_argument("--version", action="version",
                         version="%(prog)s version " + __version__)
-    parser.add_argument("--black-background", action="store_const",
-                        dest='background', const='black', default='black',
+    parser.add_argument("--black-background", action="store_false",
+                        dest='invert', default=False,
                         help='terminal is white on black (default)')
-    parser.add_argument("--white-background", "--invert", action="store_const",
-                        dest='background', const='white',
+    parser.add_argument("--white-background", "--invert", action="store_true",
+                        dest='invert',
                         help='terminal is white on black')
     parser.add_argument("--big", action="store_true",
                         dest='big', default=False,
@@ -269,8 +271,8 @@ def main():
     try:
         with args.filename as fp:
             qr = QR.from_svg(fp)
-        print(qr.to_ascii_art(CHARS_FOR_TERMINAL_BACKGROUND[args.background],
-                              big=args.big, trim=args.trim, pad=args.pad))
+        print(qr.to_ascii_art(invert=not args.invert, big=args.big,
+                              trim=args.trim, pad=args.pad))
     except (Error, KeyboardInterrupt) as e:
         sys.exit(e)
 
