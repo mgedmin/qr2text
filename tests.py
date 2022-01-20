@@ -48,3 +48,14 @@ def test_Canvas():
         '.XXX.\n'
         '..X..'
     )
+
+
+def test_Canvas_unicode():
+    canvas = Canvas(5, 3)
+    canvas.horizontal_line(0, 0.5, 5)
+    canvas.horizontal_line(1, 1.5, 3)
+    canvas.horizontal_line(2, 2.5, 1)
+    assert canvas.to_unicode_blocks() == (
+        '▀███▀\n'
+        '  ▀  '
+    )

@@ -16,8 +16,12 @@ class Error(Exception):
     pass
 
 
-SVG_NS = '{http://www.w3.org/2000/svg}'
+FULL_CHARS = ' \u2588'
+HALF_CHARS = ' \u2580\u2584\u2588'  # blank, upper, lower, full block
+INV_FULL_CHARS = FULL_CHARS[::-1]
+INV_HALF_CHARS = HALF_CHARS[::-1]
 
+SVG_NS = '{http://www.w3.org/2000/svg}'
 
 TRANSFORM_SCALE_RX = re.compile(r'^scale[(](\d+)[)]$')
 
@@ -92,9 +96,18 @@ class Canvas:
                 if 0 <= x < self.width:
                     self.pixels[y][x] = 1
 
-    def to_ascii_art(self, chars):
+    def to_ascii_art(self, chars=FULL_CHARS):
         return '\n'.join(
             ''.join(chars[px] for px in row) for row in self.pixels)
+
+    def to_unicode_blocks(self, chars=HALF_CHARS):
+        pixels = self.pixels
+        if self.height % 2 == 1:
+            pixels = pixels + [[0] * self.width]
+        return '\n'.join(
+            ''.join(chars[pixels[y+1][x] * 2 + pixels[y][x]]
+                    for x in range(self.width))
+            for y in range(0, self.height + 1, 2))
 
     def __str__(self):
         return self.to_ascii_art('.X')
@@ -169,7 +182,7 @@ class QR:
         self.canvas = Canvas(size, size)
 
     def to_ascii_art(self):
-        return self.canvas.to_ascii_art(u' \u2588')
+        return self.canvas.to_unicode_blocks(INV_HALF_CHARS)
 
     @classmethod
     def from_svg(cls, fileobj):
@@ -196,7 +209,6 @@ class QR:
         qr = cls(size)
         d = path.get('d')
         Path(qr.canvas).draw(PathParser.parse(d))
-        qr.canvas = qr.canvas.trim()
         return qr
 
 
