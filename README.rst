@@ -7,10 +7,6 @@ for displaying in a terminal.
 Because I'm a weird person who reads mail using Mutt over SSH in a terminal,
 and sometimes people send me QR codes for setting up TOTP authentication.
 
-Usage::
-
-    qr2text FILENAME.svg
-
 Example::
 
     $ python3
@@ -39,3 +35,33 @@ Example::
 Note: you may have to tell qr2text whether your terminal is black-on-white
 (--white-background) or white-on-black (--black-background).  Some QR code
 scanners don't care, but others will refuse to recognize inverted QR codes.
+
+.. [[[cog
+..   import cog, subprocess, textwrap
+..   helptext = subprocess.run(['qr2text', '--help'], capture_output=True, text=True).stdout
+..   cog.outl('\nSynopsis::\n')
+..   cog.outl(textwrap.indent(helptext, '    '))
+.. ]]]
+
+Synopsis::
+
+    usage: qr2text [-h] [--version] [--black-background] [--white-background]
+                   [--big] [--trim] [--pad PAD]
+                   filename
+
+    Convert PyQRCode SVG images to ASCII art
+
+    positional arguments:
+      filename              SVG file with the QR code (use - for stdin)
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --version             show program's version number and exit
+      --black-background    terminal is white on black (default)
+      --white-background, --invert
+                            terminal is white on black
+      --big                 use full unicode blocks instead of half blocks
+      --trim                remove empty border
+      --pad PAD             pad with empty border
+
+.. [[[end]]]
