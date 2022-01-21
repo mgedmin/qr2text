@@ -214,6 +214,7 @@ def test_QR_when_empty():
     dict(),
     dict(scale=4),
     dict(background='#fff'),
+    dict(omithw=True),
 ])
 def test_QR_from_svg(kwargs):
     buffer = BytesIO()
