@@ -301,7 +301,11 @@ class QR:
         return qr
 
     def decode(self) -> Optional[bytes]:
-        from pyzbar.pyzbar import ZBarSymbol, decode
+        try:
+            from pyzbar.pyzbar import ZBarSymbol, decode
+        except ImportError:  # pragma: nocover
+            # should I print a warning about libzbar not being available?
+            return None
 
         # Note: experiments with pyqrcode and zbarimg show that I need
         # pyqrcode.create('text').svg('file.svg', background='#fff', scale=2)

@@ -38,6 +38,9 @@ Note: you may have to tell qr2text whether your terminal is black-on-white
 (--white-background) or white-on-black (--black-background).  Some QR code
 scanners don't care, but others will refuse to recognize inverted QR codes.
 
+Note: for QR code decoding to work you need to have libzbar installed on your
+system (e.g. ``sudo apt install libzbar0`` on Ubuntu).
+
 .. [[[cog
 ..   import cog, subprocess, textwrap
 ..   helptext = subprocess.run(['qr2text', '--help'], capture_output=True, text=True).stdout
