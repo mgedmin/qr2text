@@ -26,7 +26,8 @@ HALF_CHARS = ' \u2580\u2584\u2588'  # blank, upper, lower, full block
 
 SVG_NS = '{http://www.w3.org/2000/svg}'
 
-TRANSFORM_SCALE_RX = re.compile(r'^scale[(](\d+)[)]$')
+FLOAT_REGEX = r'[-+]?(?:\d*\.\d+|\d+)(?:[eE][-+]?\d+)?'
+TRANSFORM_SCALE_RX = re.compile(f'^scale[(]({FLOAT_REGEX})[)]$')
 
 
 Token = Tuple[str, str]
@@ -41,7 +42,7 @@ class PathParser:
         '|'.join([
             r'(?P<wsp>\s+)',
             r'(?P<comma>,)',
-            r'(?P<number>[-+]?(?:\d*\.\d+|\d+)(?:[eE][-+]?\d+)?)',
+            f'(?P<number>{FLOAT_REGEX})',
             r'(?P<command>[MmZzLlHhVvCcSsQqTtAa])',
             r'(?P<error>.)',  # must be last
         ])
@@ -279,7 +280,7 @@ class QR:
             m = TRANSFORM_SCALE_RX.match(transform)
             if not m:
                 raise Error(f"Couldn't parse transform: {transform}")
-            scale = int(m.group(1))
+            scale = float(m.group(1))
         else:
             scale = 1
         size = int(width / scale)
