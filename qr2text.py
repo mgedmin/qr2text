@@ -5,10 +5,12 @@ for displaying in a terminal.
 """
 
 import argparse
+import os
 import re
 import sys
+import typing
 import xml.etree.ElementTree
-from typing import Optional
+from typing import Iterable, List, Optional, Tuple, Union
 
 
 __version__ = '0.2'
@@ -27,6 +29,10 @@ SVG_NS = '{http://www.w3.org/2000/svg}'
 TRANSFORM_SCALE_RX = re.compile(r'^scale[(](\d+)[)]$')
 
 
+Token = Tuple[str, str]
+PathCommand = Tuple[str, Tuple[float, ...]]
+
+
 class PathParser:
 
     # https://svgwg.org/svg2-draft/paths.html#PathDataBNF
@@ -42,7 +48,7 @@ class PathParser:
     )
 
     @classmethod
-    def tokenize(cls, path):
+    def tokenize(cls, path: str) -> Iterable[Tuple[str, str]]:
         for m in cls.TOKEN_RX.finditer(path):
             kind = m.lastgroup
             value = m.group()
@@ -52,30 +58,35 @@ class PathParser:
                 pos = m.start()
                 raise Error(
                     f'SVG path syntax error at position {pos}: {value}')
+            assert kind is not None  # for mypy
             yield (kind, value)
 
     @classmethod
-    def parse(cls, path):
-        command = []
+    def parse(cls, path: str) -> Iterable[PathCommand]:
+        command = None
+        args: List[float] = []
         for kind, value in cls.tokenize(path):
             if kind == 'command':
                 if command:
-                    yield tuple(command)
-                command = [value]
+                    yield (command, tuple(args))
+                command, args = value, []
             elif kind == 'number':
-                command.append(float(value))
+                if command is None:
+                    raise Error('SVG path should start with a command')
+                args.append(float(value))
             elif kind == 'comma':
                 # let's just skip these
                 continue
             else:  # pragma: nocover
                 assert False, f'did not expect {kind}'
         if command:
-            yield tuple(command)
+            yield (command, tuple(args))
 
 
 class Canvas:
 
-    def __init__(self, width, height, pixels=None):
+    def __init__(self, width: int, height: int,
+                 pixels: List[List[int]] = None) -> None:
         assert width >= 0
         assert height >= 0
         self.width = width
@@ -88,7 +99,7 @@ class Canvas:
                 assert len(pixels[0]) == width
             self.pixels = pixels
 
-    def horizontal_line(self, x, y, width):
+    def horizontal_line(self, x: float, y: float, width: float) -> None:
         assert width > 0
         # PyQRCode draws 1-pixel thick horizontal lines, which means the
         # x coordinates are whole numbers, and the y coordinate is shifted by
@@ -99,17 +110,18 @@ class Canvas:
                 if 0 <= x < self.width:
                     self.pixels[y][x] = 1
 
-    def to_bytes(self, values=(b'\xFF', b'\0'), xscale=1, yscale=1):
+    def to_bytes(self, values: Tuple[bytes, bytes] = (b'\xFF', b'\0'),
+                 xscale: int = 1, yscale: int = 1) -> bytes:
         return b''.join(
             b''.join(values[px] * xscale for px in row) * yscale
             for row in self.pixels
         )
 
-    def to_ascii_art(self, chars=FULL_CHARS, xscale=1):
+    def to_ascii_art(self, chars: str = FULL_CHARS, xscale: int = 1) -> str:
         return '\n'.join(
             ''.join(chars[px] * xscale for px in row) for row in self.pixels)
 
-    def to_unicode_blocks(self, chars=HALF_CHARS):
+    def to_unicode_blocks(self, chars: str = HALF_CHARS) -> str:
         pixels = self.pixels
         if self.height % 2 == 1:
             pixels = pixels + [[0] * self.width]
@@ -118,18 +130,18 @@ class Canvas:
                     for x in range(self.width))
             for y in range(0, self.height, 2))
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.to_ascii_art('.X')
 
-    def line_is_blank(self, y):
+    def line_is_blank(self, y: int) -> bool:
         assert 0 <= y < self.height
         return not any(self.pixels[y])
 
-    def column_is_blank(self, x):
+    def column_is_blank(self, x: int) -> bool:
         assert 0 <= x < self.width
         return not any(self.pixels[y][x] for y in range(self.height))
 
-    def trim(self):
+    def trim(self) -> 'Canvas':
         top = 0
         while top < self.height and self.line_is_blank(top):
             top += 1
@@ -146,7 +158,7 @@ class Canvas:
             row[left:right] for row in self.pixels[top:bottom]
         ])
 
-    def pad(self, top, right, bottom, left):
+    def pad(self, top: int, right: int, bottom: int, left: int) -> 'Canvas':
         assert top >= 0
         assert right >= 0
         assert bottom >= 0
@@ -161,7 +173,7 @@ class Canvas:
             left_pad + row + right_pad for row in self.pixels
         ] + bottom_pad)
 
-    def invert(self):
+    def invert(self) -> 'Canvas':
         return self.__class__(self.width, self.height, [
             [1 - px for px in row] for row in self.pixels
         ])
@@ -169,49 +181,49 @@ class Canvas:
 
 class Path:
 
-    def __init__(self, canvas):
+    def __init__(self, canvas: Canvas) -> None:
         # Technically the very first path drawing command must be an absolute
         # move_to, so the initial coordinates are undefined.
-        self.x = 0
-        self.y = 0
+        self.x = 0.0
+        self.y = 0.0
         self.canvas = canvas
 
-    def move_to(self, x, y):
+    def move_to(self, x: float, y: float) -> None:
         self.x = x
         self.y = y
 
-    def move_by(self, dx, dy):
+    def move_by(self, dx: float, dy: float) -> None:
         self.x += dx
         self.y += dy
 
-    def horizontal_line_rel(self, dx):
+    def horizontal_line_rel(self, dx: float) -> None:
         if dx > 0:
             self.canvas.horizontal_line(self.x, self.y, dx)
         elif dx < 0:
             self.canvas.horizontal_line(self.x + dx, self.y, -dx)
         self.x += dx
 
-    def draw(self, commands):
-        for cmd in commands:
-            if cmd[0] == 'M' and len(cmd) == 3:
-                self.move_to(cmd[1], cmd[2])
-            elif cmd[0] == 'm' and len(cmd) == 3:
-                self.move_by(cmd[1], cmd[2])
-            elif cmd[0] == 'h' and len(cmd) == 2:
-                self.horizontal_line_rel(cmd[1])
+    def draw(self, commands: Iterable[PathCommand]) -> None:
+        for cmd, args in commands:
+            if cmd == 'M' and len(args) == 2:
+                self.move_to(*args)
+            elif cmd == 'm' and len(args) == 2:
+                self.move_by(*args)
+            elif cmd == 'h' and len(args) == 1:
+                self.horizontal_line_rel(*args)
             else:
-                raise Error(f'Did not expect drawing command {cmd[0]}'
-                            f' with {len(cmd)-1} parameters')
+                raise Error(f'Did not expect drawing command {cmd}'
+                            f' with {len(args)} parameters')
 
 
 class QR:
 
-    def __init__(self, size):
+    def __init__(self, size) -> None:
         self.size = size
         self.canvas = Canvas(size, size)
 
     def to_ascii_art(self, chars=HALF_CHARS, big=False, trim=False, pad=0,
-                     invert=False):
+                     invert=False) -> str:
         canvas = self.canvas
         if trim:
             canvas = canvas.trim()
@@ -225,21 +237,25 @@ class QR:
             return canvas.to_unicode_blocks(chars)
 
     @classmethod
-    def from_svg(cls, fileobj):
+    def get_dim(cls, node: xml.etree.ElementTree.Element, attr: str) -> float:
+        value = node.get(attr)
+        if value is None:
+            raise Error(f"Image {attr} is not specified")
+        # TODO: handle units like mm
+        return float(value)
+
+    @classmethod
+    def from_svg(cls, fileobj: Union[os.PathLike, typing.BinaryIO]) -> 'QR':
         tree = xml.etree.ElementTree.parse(fileobj)
         root = tree.getroot()
         if root.tag != f"{SVG_NS}svg":
             raise Error(f"This is not an SVG image ({root.tag})")
         if root.get('class') != 'pyqrcode':
             raise Error("The image was not generated by PyQRCode")
-        width = root.get('width')
-        height = root.get('height')
-        if width != height:
-            raise Error(f"The image is not square ({width}x{height})")
         viewbox = root.get('viewBox')
         if viewbox:
             try:
-                coords = list(map(int, viewbox.split()))
+                coords = list(map(float, viewbox.split()))
                 if len(coords) != 4:
                     raise ValueError
             except ValueError:
@@ -247,8 +263,11 @@ class QR:
             if coords[:2] != [0, 0]:
                 raise Error(f"Unexpected viewbox origin: {viewbox}")
             width, height = coords[-2:]
-            if width != height:
-                raise Error(f"The image is not square ({width}x{height})")
+        else:
+            width = cls.get_dim(root, 'width')
+            height = cls.get_dim(root, 'height')
+        if width != height:
+            raise Error(f"The image is not square ({width}x{height})")
         path = root.find(f"{SVG_NS}path[@class='pyqrline']")
         if path is None:
             raise Error("Did not find the QR code in the image")
@@ -258,12 +277,16 @@ class QR:
         transform = path.get('transform')
         if transform:
             m = TRANSFORM_SCALE_RX.match(transform)
+            if not m:
+                raise Error(f"Couldn't parse transform: {transform}")
             scale = int(m.group(1))
         else:
             scale = 1
-        size = int(float(width) / scale)
+        size = int(width / scale)
         qr = cls(size)
         d = path.get('d')
+        if d is None:
+            raise Error("SVG <path> element has no 'd' attribute")
         Path(qr.canvas).draw(PathParser.parse(d))
         return qr
 
@@ -284,7 +307,7 @@ class QR:
         return res[0].data
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Convert PyQRCode SVG images to ASCII art")
     parser.add_argument("--version", action="version",
@@ -306,7 +329,7 @@ def main():
     parser.add_argument("--no-decode", action="store_false",
                         dest="decode", default=True,
                         help="don't decode the QR codes")
-    parser.add_argument("filename", type=argparse.FileType('r'), nargs='+',
+    parser.add_argument("filename", type=argparse.FileType('rb'), nargs='+',
                         help='SVG file with the QR code (use - for stdin)')
     args = parser.parse_args()
 

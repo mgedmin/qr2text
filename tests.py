@@ -33,20 +33,20 @@ def test_tokenize_error(path):
 
 
 @pytest.mark.parametrize("d, expected", [
-    ('M 1, 2', [('M', 1, 2)]),
-    ('M 1 2', [('M', 1, 2)]),
-    ('M1-2', [('M', 1, -2)]),
-    ('M+1-2', [('M', +1, -2)]),
-    ('h 42', [('h', 42)]),
-    ('h 1.5', [('h', 1.5)]),
-    ('h .5', [('h', .5)]),
-    ('h 1e-4', [('h', 1e-4)]),
-    ('h 1 v 2', [('h', 1), ('v', 2)]),
-    ('h 1 v 2', [('h', 1), ('v', 2)]),
-    ('z', [('z',)]),
-    ('M 1 2 3 4', [('M', 1, 2, 3, 4)]),
+    ('M 1, 2', [('M', (1, 2))]),
+    ('M 1 2', [('M', (1, 2))]),
+    ('M1-2', [('M', (1, -2))]),
+    ('M+1-2', [('M', (+1, -2))]),
+    ('h 42', [('h', (42,))]),
+    ('h 1.5', [('h', (1.5,))]),
+    ('h .5', [('h', (.5,))]),
+    ('h 1e-4', [('h', (1e-4,))]),
+    ('h 1 v 2', [('h', (1,)), ('v', (2,))]),
+    ('h 1 v 2', [('h', (1,)), ('v', (2,))]),
+    ('z', [('z', ())]),
+    ('M 1 2 3 4', [('M', (1, 2, 3, 4))]),
     ('M 6,10\nA 6 4 10 1 0 14,10',
-     [('M', 6, 10), ('A', 6, 4, 10, 1, 0, 14, 10)]),
+     [('M', (6, 10)), ('A', (6, 4, 10, 1, 0, 14, 10))]),
 ])
 def test_PathParser_parse(d, expected):
     assert list(PathParser.parse(d)) == expected
@@ -173,10 +173,10 @@ def test_Path_draw():
     canvas = Canvas(5, 3)
     path = Path(canvas)
     path.draw([
-        ('M', 2, 1.5),
-        ('h', 6),
-        ('m', -5, 1),
-        ('h', -2),
+        ('M', (2, 1.5)),
+        ('h', (6,)),
+        ('m', (-5, 1)),
+        ('h', (-2,)),
     ])
     assert str(canvas) == '\n'.join([
         '.....',
@@ -190,7 +190,7 @@ def test_Path_draw_error():
     path = Path(canvas)
     with pytest.raises(Error) as ctx:
         path.draw([
-            ('M', 2, 1.5, 4),
+            ('M', (2, 1.5, 4)),
         ])
     assert str(ctx.value) == (
         'Did not expect drawing command M with 3 parameters'

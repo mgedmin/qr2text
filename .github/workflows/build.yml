@@ -74,6 +74,7 @@ jobs:
           - check-manifest
           - check-python-versions
           - cog
+          - mypy
 
     steps:
       - name: Git clone
