@@ -283,6 +283,9 @@ def main():
                         help='remove empty border')
     parser.add_argument("--pad", type=int, default=0,
                         help='pad with empty border')
+    parser.add_argument("--no-decode", action="store_false",
+                        dest="decode", default=True,
+                        help="don't decode the QR codes")
     parser.add_argument("filename", type=argparse.FileType('r'), nargs='+',
                         help='SVG file with the QR code (use - for stdin)')
     args = parser.parse_args()
@@ -299,8 +302,9 @@ def main():
                     continue
             print(qr.to_ascii_art(invert=not args.invert, big=args.big,
                                   trim=args.trim, pad=args.pad))
-            for symbol in qr.decode():
-                print(symbol.data.decode(errors='replace'))
+            if args.decode:
+                for symbol in qr.decode():
+                    print(symbol.data.decode(errors='replace'))
             sys.stdout.flush()
     except (Error, KeyboardInterrupt) as e:
         sys.exit(e)

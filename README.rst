@@ -48,7 +48,7 @@ scanners don't care, but others will refuse to recognize inverted QR codes.
 Synopsis::
 
     usage: qr2text [-h] [--version] [--black-background] [--white-background]
-                   [--big] [--trim] [--pad PAD]
+                   [--big] [--trim] [--pad PAD] [--no-decode]
                    filename [filename ...]
 
     Convert PyQRCode SVG images to ASCII art
@@ -65,5 +65,6 @@ Synopsis::
       --big                 use full unicode blocks instead of half blocks
       --trim                remove empty border
       --pad PAD             pad with empty border
+      --no-decode           don't decode the QR codes
 
 .. [[[end]]]
