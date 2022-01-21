@@ -49,7 +49,8 @@ class PathParser:
                 continue
             if kind == 'error':
                 pos = m.start()
-                raise Error(f'Bad SVG path at position {pos}: {value}')
+                raise Error(
+                    f'SVG path syntax error at position {pos}: {value}')
             yield (kind, value)
 
     @classmethod

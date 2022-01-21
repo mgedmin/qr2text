@@ -22,8 +22,11 @@ def test_tokenize(path, expected):
     'qwerty',
 ])
 def test_tokenize_error(path):
-    with pytest.raises(Error):
+    with pytest.raises(Error) as ctx:
         list(PathParser.tokenize(path))
+    assert str(ctx.value) == (
+        "SVG path syntax error at position 1: w"
+    )
 
 
 @pytest.mark.parametrize("d, expected", [
