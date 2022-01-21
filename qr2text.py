@@ -75,15 +75,16 @@ class PathParser:
 class Canvas:
 
     def __init__(self, width, height, pixels=None):
-        assert width > 0
-        assert height > 0
+        assert width >= 0
+        assert height >= 0
         self.width = width
         self.height = height
         if pixels is None:
             self.pixels = [[0] * width for _ in range(height)]
         else:
             assert len(pixels) == height
-            assert len(pixels[0]) == width
+            if height > 0:
+                assert len(pixels[0]) == width
             self.pixels = pixels
 
     def horizontal_line(self, x, y, width):
@@ -114,7 +115,7 @@ class Canvas:
         return '\n'.join(
             ''.join(chars[pixels[y+1][x] * 2 + pixels[y][x]]
                     for x in range(self.width))
-            for y in range(0, self.height + 1, 2))
+            for y in range(0, self.height, 2))
 
     def __str__(self):
         return self.to_ascii_art('.X')

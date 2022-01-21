@@ -1,6 +1,6 @@
 import pytest
 
-from qr2text import Canvas, Error, Path, PathParser
+from qr2text import Canvas, Error, Path, PathParser, QR
 
 
 @pytest.mark.parametrize("path, expected", [
@@ -113,6 +113,15 @@ def test_Canvas_unicode():
     ])
 
 
+def test_Canvas_unicode_small():
+    canvas = Canvas(2, 2)
+    canvas.horizontal_line(0, 0.5, 2)
+    canvas.horizontal_line(0, 1.5, 1)
+    assert canvas.to_unicode_blocks() == '\n'.join([
+        '█▀',
+    ])
+
+
 def test_Canvas_to_bytes():
     canvas = Canvas(5, 3)
     canvas.horizontal_line(0, 0.5, 5)
@@ -183,3 +192,15 @@ def test_Path_draw_error():
     assert str(ctx.value) == (
         'Did not expect drawing command M with 3 parameters'
     )
+
+
+def test_QR_when_empty():
+    qr = QR(29)
+    assert qr.to_ascii_art(trim=True) == ''
+    assert qr.to_ascii_art(trim=True, invert=True) == ''
+    assert qr.to_ascii_art(trim=True, big=True) == ''
+    assert qr.to_ascii_art(trim=True, big=True, pad=1) == '    \n    '
+    assert qr.to_ascii_art(trim=True, pad=1) == '  '
+    assert qr.to_ascii_art(trim=True, invert=True, pad=1) == '██'
+    assert qr.to_ascii_art(trim=True, big=True, invert=True, pad=1) == (
+        '████\n████')
