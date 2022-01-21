@@ -10,7 +10,7 @@ import sys
 import xml.etree.ElementTree
 
 
-__version__ = '0.1'
+__version__ = '0.2'
 
 
 class Error(Exception):
@@ -95,6 +95,12 @@ class Canvas:
             for x in range(int(x), int(x + width)):
                 if 0 <= x < self.width:
                     self.pixels[y][x] = 1
+
+    def to_bytes(self, values=(b'\xFF', b'\0'), xscale=1, yscale=1):
+        return b''.join(
+            b''.join(values[px] * xscale for px in row) * yscale
+            for row in self.pixels
+        )
 
     def to_ascii_art(self, chars=FULL_CHARS, xscale=1):
         return '\n'.join(
@@ -245,6 +251,18 @@ class QR:
         Path(qr.canvas).draw(PathParser.parse(d))
         return qr
 
+    def decode(self):
+        from pyzbar.pyzbar import ZBarSymbol, decode
+
+        # Note: experiments with pyqrcode and zbarimg show that I need
+        # pyqrcode.create('text').svg('file.svg', background='#fff', scale=2)
+        # to have recognizable qr codes.  no background or scale=1 make zbarimg
+        # fail to find any codes.
+        scale = 2
+        return decode((self.canvas.to_bytes(xscale=scale, yscale=scale),
+                       self.size * scale, self.size * scale),
+                      symbols=[ZBarSymbol.QRCODE])
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -274,6 +292,8 @@ def main():
             qr = QR.from_svg(fp)
         print(qr.to_ascii_art(invert=not args.invert, big=args.big,
                               trim=args.trim, pad=args.pad))
+        for symbol in qr.decode():
+            print(symbol.data.decode(errors='replace'))
     except (Error, KeyboardInterrupt) as e:
         sys.exit(e)
 

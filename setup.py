@@ -46,7 +46,9 @@ setup(
 
     py_modules=["qr2text"],
     zip_safe=False,
-    install_requires=[],
+    install_requires=[
+        'pyzbar',
+    ],
     extras_require={},
     entry_points={
         "console_scripts": [

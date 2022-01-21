@@ -32,6 +32,8 @@ Example::
         ▀▀▀▀▀▀▀  ▀ ▀▀  ▀▀ ▀ ▀   ▀
 
 
+    Hello world!
+
 Note: you may have to tell qr2text whether your terminal is black-on-white
 (--white-background) or white-on-black (--black-background).  Some QR code
 scanners don't care, but others will refuse to recognize inverted QR codes.
