@@ -2,3 +2,6 @@ include *.mk
 include *.py
 include Makefile
 include tox.ini
+
+# added by check-manifest
+include *.rst
