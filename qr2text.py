@@ -11,6 +11,8 @@ import sys
 import xml.etree.ElementTree
 from typing import BinaryIO, Iterable, List, Optional, Tuple, Union
 
+import pyqrcode
+
 
 try:
     from pyzbar import pyzbar
@@ -261,6 +263,16 @@ class QR:
             raise Error(f"Couldn't parse {attr}: {value}")
 
     @classmethod
+    def from_text(cls, text: str) -> 'QR':
+        code = pyqrcode.create(text, encoding='UTF-8')
+        data = code.text().splitlines()
+        qr = cls(len(data))
+        qr.canvas.pixels = [
+            [int(px) for px in row] for row in data
+        ]
+        return qr
+
+    @classmethod
     def from_svg(cls, fileobj: FileNameOrFileObject) -> 'QR':
         try:
             tree = xml.etree.ElementTree.parse(fileobj)
@@ -351,7 +363,9 @@ def main() -> None:
     parser.add_argument("--no-decode", action="store_false",
                         dest="decode",
                         help="don't decode the QR codes")
-    parser.add_argument("filename", type=argparse.FileType('rb'), nargs='+',
+    parser.add_argument("--encode-text", action="append",
+                        help="generate a QR code with given text")
+    parser.add_argument("filename", type=argparse.FileType('rb'), nargs='*',
                         help='SVG file with the QR code (use - for stdin)')
     args = parser.parse_args()
 
@@ -359,15 +373,24 @@ def main() -> None:
         print("libzbar is not available, --decode ignored", file=sys.stderr)
 
     rc = 0
-    try:
+
+    def _process_args() -> Iterable[QR]:
+        for text in args.encode_text or []:
+            qr = QR.from_text(text)
+            yield qr
         for filename in args.filename:
             with filename as fp:
                 try:
                     qr = QR.from_svg(fp)
                 except Error as e:
                     print(f"{filename.name}: {e}", file=sys.stderr, flush=True)
+                    nonlocal rc
                     rc = 1
-                    continue
+                else:
+                    yield qr
+
+    try:
+        for qr in _process_args():
             print(qr.to_ascii_art(invert=not args.invert, big=args.big,
                                   trim=args.trim, pad=args.pad))
             if args.decode:

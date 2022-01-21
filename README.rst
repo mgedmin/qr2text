@@ -52,7 +52,8 @@ Synopsis::
 
     usage: qr2text [-h] [--version] [--black-background] [--white-background]
                    [--big] [--trim] [--pad PAD] [--decode] [--no-decode]
-                   filename [filename ...]
+                   [--encode-text ENCODE_TEXT]
+                   [filename ...]
 
     Convert PyQRCode SVG images to ASCII art
 
@@ -70,5 +71,7 @@ Synopsis::
       --pad PAD             pad with empty border
       --decode              decode the QR codes (default if libzbar is available)
       --no-decode           don't decode the QR codes
+      --encode-text ENCODE_TEXT
+                            generate a QR code with given text
 
 .. [[[end]]]

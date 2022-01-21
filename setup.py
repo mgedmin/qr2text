@@ -48,11 +48,11 @@ setup(
     py_modules=["qr2text"],
     zip_safe=False,
     install_requires=[
+        'pyqrcode',
         'pyzbar',
     ],
     extras_require={
         'test': [
-            'pyqrcode',
         ],
     },
     entry_points={

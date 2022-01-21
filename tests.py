@@ -318,6 +318,31 @@ def test_main(monkeypatch, tmp_path, capsys):
     ]) + '\n'
 
 
+def test_main_encode_text(monkeypatch, tmp_path, capsys):
+    monkeypatch.setattr(sys, 'argv', ['qr2text', '--encode', 'hello'])
+    with pytest.raises(SystemExit) as exc:
+        main()
+    assert exc.value.code == 0
+    assert capsys.readouterr().out == '\n'.join([
+        '█████████████████████████████',
+        '█████████████████████████████',
+        '████ ▄▄▄▄▄ █████▄█ ▄▄▄▄▄ ████',
+        '████ █   █ █ ▄▀▄██ █   █ ████',
+        '████ █▄▄▄█ ███ ▄▄█ █▄▄▄█ ████',
+        '████▄▄▄▄▄▄▄█▄▀ ▀▄█▄▄▄▄▄▄▄████',
+        '████▀█▀▄▄▀▄ █  ▄██▀▀▀  ██████',
+        '████  █▄▀ ▄▀▄ █▄▀ █ ▀█ ▄▄████',
+        '█████▄██▄▄▄▄ █▀█▀▀ ▄▄ █ █████',
+        '████ ▄▄▄▄▄ █▄▀ ▀█▀▄██▀ ▀▀████',
+        '████ █   █ █ █ ▀ ▀██ ▄█▄▄████',
+        '████ █▄▄▄█ ██▀  ▀        ████',
+        '████▄▄▄▄▄▄▄███▄██▄███████████',
+        '█████████████████████████████',
+        '▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀',
+        'hello',
+    ]) + '\n'
+
+
 def test_main_no_libzbar(monkeypatch, tmp_path, capsys):
     filename = str(tmp_path / 'hello.svg')
     pyqrcode.create('hello').svg(filename)
