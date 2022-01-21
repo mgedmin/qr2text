@@ -8,6 +8,7 @@ import argparse
 import re
 import sys
 import xml.etree.ElementTree
+from typing import Optional
 
 
 __version__ = '0.2'
@@ -253,7 +254,7 @@ class QR:
         Path(qr.canvas).draw(PathParser.parse(d))
         return qr
 
-    def decode(self):
+    def decode(self) -> Optional[bytes]:
         from pyzbar.pyzbar import ZBarSymbol, decode
 
         # Note: experiments with pyqrcode and zbarimg show that I need
@@ -261,9 +262,13 @@ class QR:
         # to have recognizable qr codes.  no background or scale=1 make zbarimg
         # fail to find any codes.
         scale = 2
-        return decode((self.canvas.to_bytes(xscale=scale, yscale=scale),
-                       self.size * scale, self.size * scale),
-                      symbols=[ZBarSymbol.QRCODE])
+        res = decode((self.canvas.to_bytes(xscale=scale, yscale=scale),
+                      self.size * scale, self.size * scale),
+                     symbols=[ZBarSymbol.QRCODE])
+        assert 0 <= len(res) <= 1
+        if not res:
+            return None
+        return res[0].data
 
 
 def main():
@@ -305,8 +310,9 @@ def main():
             print(qr.to_ascii_art(invert=not args.invert, big=args.big,
                                   trim=args.trim, pad=args.pad))
             if args.decode:
-                for symbol in qr.decode():
-                    print(symbol.data.decode(errors='replace'))
+                data = qr.decode()
+                if data:
+                    print(data.decode(errors='replace'))
             sys.stdout.flush()
     except (Error, KeyboardInterrupt) as e:
         sys.exit(e)

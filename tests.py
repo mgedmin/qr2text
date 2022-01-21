@@ -1,6 +1,9 @@
+from io import BytesIO
+
+import pyqrcode
 import pytest
 
-from qr2text import Canvas, Error, Path, PathParser, QR
+from qr2text import QR, Canvas, Error, Path, PathParser
 
 
 @pytest.mark.parametrize("path, expected", [
@@ -204,3 +207,31 @@ def test_QR_when_empty():
     assert qr.to_ascii_art(trim=True, invert=True, pad=1) == '██'
     assert qr.to_ascii_art(trim=True, big=True, invert=True, pad=1) == (
         '████\n████')
+    assert qr.decode() is None
+
+
+@pytest.mark.parametrize("kwargs", [
+    dict(),
+    dict(scale=4),
+    dict(background='#fff'),
+])
+def test_QR_from_svg(kwargs):
+    buffer = BytesIO()
+    code = pyqrcode.create('A', error='L')
+    code.svg(buffer, **kwargs)
+    buffer.seek(0)
+    qr = QR.from_svg(buffer)
+    assert qr.to_ascii_art(trim=True) == '\n'.join([
+        '█▀▀▀▀▀█  █▄█▀ █▀▀▀▀▀█',
+        '█ ███ █ ▀█ █▀ █ ███ █',
+        '█ ▀▀▀ █   ▀ █ █ ▀▀▀ █',
+        '▀▀▀▀▀▀▀ █▄▀▄█ ▀▀▀▀▀▀▀',
+        '▀██▄▀▀▀█▀▀█▀ ▀█   █▄ ',
+        ' ▄ ▀▀█▀▄▄▄█ ▀ ▄ ▀ ▄▄▀',
+        '▀▀▀ ▀▀▀ ██ ▄▀▄▀▄▀▄▀▀▀',
+        '█▀▀▀▀▀█ █▄██▄█▀█▄█▀▄ ',
+        '█ ███ █ ▀▄ ▀ ▀█▀ ▀█▄▀',
+        '█ ▀▀▀ █ █▀█ ▀ ▄ ▀ ▄▄█',
+        '▀▀▀▀▀▀▀ ▀▀▀ ▀ ▀ ▀ ▀ ▀',
+    ])
+    assert qr.decode() == b'A'

@@ -49,7 +49,11 @@ setup(
     install_requires=[
         'pyzbar',
     ],
-    extras_require={},
+    extras_require={
+        'test': [
+            'pyqrcode',
+        ],
+    },
     entry_points={
         "console_scripts": [
             "qr2text = qr2text:main",
