@@ -51,7 +51,7 @@ system (e.g. ``sudo apt install libzbar0`` on Ubuntu).
 Synopsis::
 
     usage: qr2text [-h] [--version] [--black-background] [--white-background]
-                   [--big] [--trim] [--pad PAD] [--no-decode]
+                   [--big] [--trim] [--pad PAD] [--decode] [--no-decode]
                    filename [filename ...]
 
     Convert PyQRCode SVG images to ASCII art
@@ -68,6 +68,7 @@ Synopsis::
       --big                 use full unicode blocks instead of half blocks
       --trim                remove empty border
       --pad PAD             pad with empty border
+      --decode              decode the QR codes (default if libzbar is available)
       --no-decode           don't decode the QR codes
 
 .. [[[end]]]
