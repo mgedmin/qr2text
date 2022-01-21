@@ -4,6 +4,7 @@ from io import BytesIO
 import pyqrcode
 import pytest
 
+import qr2text
 from qr2text import QR, Canvas, Error, Path, PathParser, main
 
 
@@ -314,6 +315,19 @@ def test_main(monkeypatch, tmp_path, capsys):
         '█████████████████████████████',
         '▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀',
         'hello',
+    ]) + '\n'
+
+
+def test_main_no_libzbar(monkeypatch, tmp_path, capsys):
+    filename = str(tmp_path / 'hello.svg')
+    pyqrcode.create('hello').svg(filename)
+    monkeypatch.setattr(sys, 'argv', ['qr2text', '--decode', filename])
+    monkeypatch.setattr(qr2text, 'pyzbar', None)
+    with pytest.raises(SystemExit) as exc:
+        main()
+    assert exc.value.code == 0
+    assert capsys.readouterr().err == '\n'.join([
+        'libzbar is not available, --decode ignored',
     ]) + '\n'
 
 

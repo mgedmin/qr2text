@@ -12,6 +12,12 @@ import xml.etree.ElementTree
 from typing import BinaryIO, Iterable, List, Optional, Tuple, Union
 
 
+try:
+    from pyzbar import pyzbar
+except ImportError:  # pragma: nocover
+    pyzbar = None
+
+
 __version__ = '1.0.1.dev0'
 
 
@@ -301,10 +307,7 @@ class QR:
         return qr
 
     def decode(self) -> Optional[bytes]:
-        try:
-            from pyzbar.pyzbar import ZBarSymbol, decode
-        except ImportError:  # pragma: nocover
-            # should I print a warning about libzbar not being available?
+        if pyzbar is None:
             return None
 
         # Note: experiments with pyqrcode and zbarimg show that I need
@@ -312,9 +315,9 @@ class QR:
         # to have recognizable qr codes.  no background or scale=1 make zbarimg
         # fail to find any codes.
         scale = 2
-        res = decode((self.canvas.to_bytes(xscale=scale, yscale=scale),
-                      self.size * scale, self.size * scale),
-                     symbols=[ZBarSymbol.QRCODE])
+        image_data = (self.canvas.to_bytes(xscale=scale, yscale=scale),
+                      self.size * scale, self.size * scale)
+        res = pyzbar.decode(image_data, symbols=[pyzbar.ZBarSymbol.QRCODE])
         assert 0 <= len(res) <= 1
         if not res:
             return None
@@ -341,12 +344,19 @@ def main() -> None:
                         help='remove empty border')
     parser.add_argument("--pad", type=int, default=0,
                         help='pad with empty border')
+    parser.add_argument("--decode", action="store_true",
+                        default=(pyzbar is not None),
+                        help=("decode the QR codes"
+                              " (default if libzbar is available)"))
     parser.add_argument("--no-decode", action="store_false",
-                        dest="decode", default=True,
+                        dest="decode",
                         help="don't decode the QR codes")
     parser.add_argument("filename", type=argparse.FileType('rb'), nargs='+',
                         help='SVG file with the QR code (use - for stdin)')
     args = parser.parse_args()
+
+    if args.decode and pyzbar is None:
+        print("libzbar is not available, --decode ignored", file=sys.stderr)
 
     rc = 0
     try:
