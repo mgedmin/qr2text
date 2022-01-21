@@ -34,7 +34,12 @@ Other tools & libraries for encoding and decoding QR codes
     ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 
   The output from this tool was the inspiration for my qr2text.  I now see that
-  it uses non-breaking spaces instead of regular spaces, how interesting!
+  it uses non-breaking spaces instead of regular spaces, how interesting!  Also,
+  it seems to be using ANSI color sequences of some sort, because the white is
+  brighter than what I get with qr2text?  Looking at the source: yes, it forces
+  256-color terminal codes 255 (almost white) for foreground and 232 (almost
+  black) for background.  I wonder why?  231 would be pure white, and 16 would
+  be pure black...
 
 - ZBar (http://zbar.sourceforge.net/): C, but Python bindings existi
   (https://pypi.org/project/pyzbar/), can encode and decode various 1D and 2D
