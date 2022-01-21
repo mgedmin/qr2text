@@ -249,8 +249,10 @@ class QR:
         value = node.get(attr)
         if value is None:
             raise Error(f"Image {attr} is not specified")
-        # TODO: handle units like mm
-        return float(value)
+        try:
+            return float(value)
+        except ValueError:
+            raise Error(f"Couldn't parse {attr}: {value}")
 
     @classmethod
     def from_svg(cls, fileobj: FileNameOrFileObject) -> 'QR':

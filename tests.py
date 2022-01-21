@@ -263,6 +263,8 @@ svg = 'svg xmlns="http://www.w3.org/2000/svg"'
      "Image width is not specified"),
     (f'<{svg} class="pyqrcode" width="5" height="6"></svg>',
      "Image is not square: 5.0 x 6.0"),
+    (f'<{svg} class="pyqrcode" width="5mm" height="5mm"></svg>',
+     "Couldn't parse width: 5mm"),
     (f'<{svg} class="pyqrcode" viewBox="0 0 5 5"></svg>',
      "Did not find the QR code in the image"),
     (f'<{svg} class="pyqrcode" viewBox="0 0 5 5">'
