@@ -1,7 +1,7 @@
 Changelog
 ==========
 
-1.0.1 (unreleased)
+1.0.1 (2022-01-21)
 ------------------
 
 - Don't fail with an ImportError when libzbar is not available on the system,
