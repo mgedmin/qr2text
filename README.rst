@@ -59,7 +59,7 @@ Synopsis::
       --version             show program's version number and exit
       --black-background    terminal is white on black (default)
       --white-background, --invert
-                            terminal is white on black
+                            terminal is black on white
       --big                 use full unicode blocks instead of half blocks
       --trim                remove empty border
       --pad PAD             pad with empty border

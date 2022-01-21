@@ -256,7 +256,7 @@ def main():
                         help='terminal is white on black (default)')
     parser.add_argument("--white-background", "--invert", action="store_true",
                         dest='invert',
-                        help='terminal is white on black')
+                        help='terminal is black on white')
     parser.add_argument("--big", action="store_true",
                         dest='big', default=False,
                         help='use full unicode blocks instead of half blocks')
