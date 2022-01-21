@@ -49,7 +49,7 @@ Synopsis::
 
     usage: qr2text [-h] [--version] [--black-background] [--white-background]
                    [--big] [--trim] [--pad PAD]
-                   filename
+                   filename [filename ...]
 
     Convert PyQRCode SVG images to ASCII art
 

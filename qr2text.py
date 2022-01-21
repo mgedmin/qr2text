@@ -283,19 +283,29 @@ def main():
                         help='remove empty border')
     parser.add_argument("--pad", type=int, default=0,
                         help='pad with empty border')
-    parser.add_argument("filename", type=argparse.FileType('r'),
+    parser.add_argument("filename", type=argparse.FileType('r'), nargs='+',
                         help='SVG file with the QR code (use - for stdin)')
     args = parser.parse_args()
 
+    rc = 0
     try:
-        with args.filename as fp:
-            qr = QR.from_svg(fp)
-        print(qr.to_ascii_art(invert=not args.invert, big=args.big,
-                              trim=args.trim, pad=args.pad))
-        for symbol in qr.decode():
-            print(symbol.data.decode(errors='replace'))
+        for filename in args.filename:
+            with filename as fp:
+                try:
+                    qr = QR.from_svg(fp)
+                except Error as e:
+                    print(f"{filename.name}: {e}", file=sys.stderr, flush=True)
+                    rc = 1
+                    continue
+            print(qr.to_ascii_art(invert=not args.invert, big=args.big,
+                                  trim=args.trim, pad=args.pad))
+            for symbol in qr.decode():
+                print(symbol.data.decode(errors='replace'))
+            sys.stdout.flush()
     except (Error, KeyboardInterrupt) as e:
         sys.exit(e)
+    else:
+        sys.exit(rc)
 
 
 if __name__ == "__main__":
