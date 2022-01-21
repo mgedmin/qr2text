@@ -1,6 +1,6 @@
 import pytest
 
-from qr2text import Canvas, Error, PathParser
+from qr2text import Canvas, Error, Path, PathParser
 
 
 @pytest.mark.parametrize("path, expected", [
@@ -138,3 +138,45 @@ def test_Canvas_to_bytes_scaled():
         b'\xFF\xFF\xFF\xFF\x00\x00\xFF\xFF\xFF\xFF',
         b'\xFF\xFF\xFF\xFF\x00\x00\xFF\xFF\xFF\xFF',
     ])
+
+
+def test_Path():
+    canvas = Canvas(5, 3)
+    path = Path(canvas)
+    path.move_to(2, 1.5)
+    path.horizontal_line_rel(6)
+    path.move_by(-5, 1)
+    path.horizontal_line_rel(-2)
+    assert str(canvas) == '\n'.join([
+        '.....',
+        '..XXX',
+        '.XX..',
+    ])
+
+
+def test_Path_draw():
+    canvas = Canvas(5, 3)
+    path = Path(canvas)
+    path.draw([
+        ('M', 2, 1.5),
+        ('h', 6),
+        ('m', -5, 1),
+        ('h', -2),
+    ])
+    assert str(canvas) == '\n'.join([
+        '.....',
+        '..XXX',
+        '.XX..',
+    ])
+
+
+def test_Path_draw_error():
+    canvas = Canvas(5, 3)
+    path = Path(canvas)
+    with pytest.raises(Error) as ctx:
+        path.draw([
+            ('M', 2, 1.5, 4),
+        ])
+    assert str(ctx.value) == (
+        'Did not expect drawing command M with 3 parameters'
+    )

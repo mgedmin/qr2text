@@ -198,7 +198,7 @@ class Path:
                 self.horizontal_line_rel(cmd[1])
             else:
                 raise Error(f'Did not expect drawing command {cmd[0]}'
-                            f' with {len(cmd)-2} parameters')
+                            f' with {len(cmd)-1} parameters')
 
 
 class QR:
