@@ -58,6 +58,18 @@ def test_Canvas():
     ])
 
 
+def test_Canvas_invert():
+    canvas = Canvas(5, 3)
+    canvas.horizontal_line(0, 0.5, 5)
+    canvas.horizontal_line(1, 1.5, 3)
+    canvas.horizontal_line(2, 2.5, 1)
+    assert str(canvas.invert()) == '\n'.join([
+        '.....',
+        'X...X',
+        'XX.XX',
+    ])
+
+
 def test_Canvas_trim():
     canvas = Canvas(5, 3)
     canvas.horizontal_line(1, 1.5, 3)
@@ -95,4 +107,34 @@ def test_Canvas_unicode():
     assert canvas.to_unicode_blocks() == '\n'.join([
         '▀███▀',
         '  ▀  ',
+    ])
+
+
+def test_Canvas_to_bytes():
+    canvas = Canvas(5, 3)
+    canvas.horizontal_line(0, 0.5, 5)
+    canvas.horizontal_line(1, 1.5, 3)
+    canvas.horizontal_line(2, 2.5, 1)
+    assert canvas.to_bytes() == b''.join([
+        b'\x00\x00\x00\x00\x00',
+        b'\xFF\x00\x00\x00\xFF',
+        b'\xFF\xFF\x00\xFF\xFF',
+    ])
+
+
+def test_Canvas_to_bytes_scaled():
+    canvas = Canvas(5, 3)
+    canvas.horizontal_line(0, 0.5, 5)
+    canvas.horizontal_line(1, 1.5, 3)
+    canvas.horizontal_line(2, 2.5, 1)
+    assert canvas.to_bytes(xscale=2, yscale=3) == b''.join([
+        b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+        b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+        b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+        b'\xFF\xFF\x00\x00\x00\x00\x00\x00\xFF\xFF',
+        b'\xFF\xFF\x00\x00\x00\x00\x00\x00\xFF\xFF',
+        b'\xFF\xFF\x00\x00\x00\x00\x00\x00\xFF\xFF',
+        b'\xFF\xFF\xFF\xFF\x00\x00\xFF\xFF\xFF\xFF',
+        b'\xFF\xFF\xFF\xFF\x00\x00\xFF\xFF\xFF\xFF',
+        b'\xFF\xFF\xFF\xFF\x00\x00\xFF\xFF\xFF\xFF',
     ])
