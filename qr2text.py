@@ -233,8 +233,8 @@ class QR:
         height = int(root.get('height'))
         if width != height:
             raise Error(f"The image is not square ({width}x{height})")
-        path = root.find(f'{SVG_NS}path')
-        if path.get('class') != 'pyqrline':
+        path = root.find(f"{SVG_NS}path[@class='pyqrline']")
+        if path is None:
             raise Error("Did not find the QR code in the image")
         # path.get('transform') should be something like "scale(8)"
         # path.get('stroke') should be '#000'
