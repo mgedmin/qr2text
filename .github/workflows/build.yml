@@ -54,7 +54,7 @@ jobs:
         run: coverage run -m pytest
 
       - name: Check test coverage
-        run: coverage report -m --fail-under=60
+        run: coverage report -m --fail-under=100
 
       - name: Report to coveralls
         run: coveralls

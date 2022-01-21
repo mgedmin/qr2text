@@ -1,9 +1,10 @@
+import sys
 from io import BytesIO
 
 import pyqrcode
 import pytest
 
-from qr2text import QR, Canvas, Error, Path, PathParser
+from qr2text import QR, Canvas, Error, Path, PathParser, main
 
 
 @pytest.mark.parametrize("path, expected", [
@@ -281,3 +282,65 @@ def test_QR_from_svg_errors(svg, error):
     with pytest.raises(Error) as ctx:
         QR.from_svg(buffer)
     assert str(ctx.value) == error
+
+
+def test_main_help(monkeypatch):
+    monkeypatch.setattr(sys, 'argv', ['qr2text', '--help'])
+    with pytest.raises(SystemExit):
+        main()
+
+
+def test_main(monkeypatch, tmp_path, capsys):
+    filename = str(tmp_path / 'hello.svg')
+    pyqrcode.create('hello').svg(filename)
+    monkeypatch.setattr(sys, 'argv', ['qr2text', filename])
+    with pytest.raises(SystemExit) as exc:
+        main()
+    assert exc.value.code == 0
+    assert capsys.readouterr().out == '\n'.join([
+        '█████████████████████████████',
+        '█████████████████████████████',
+        '████ ▄▄▄▄▄ █████▄█ ▄▄▄▄▄ ████',
+        '████ █   █ █ ▄▀▄██ █   █ ████',
+        '████ █▄▄▄█ ███ ▄▄█ █▄▄▄█ ████',
+        '████▄▄▄▄▄▄▄█▄▀ ▀▄█▄▄▄▄▄▄▄████',
+        '████▀█▀▄▄▀▄ █  ▄██▀▀▀  ██████',
+        '████  █▄▀ ▄▀▄ █▄▀ █ ▀█ ▄▄████',
+        '█████▄██▄▄▄▄ █▀█▀▀ ▄▄ █ █████',
+        '████ ▄▄▄▄▄ █▄▀ ▀█▀▄██▀ ▀▀████',
+        '████ █   █ █ █ ▀ ▀██ ▄█▄▄████',
+        '████ █▄▄▄█ ██▀  ▀        ████',
+        '████▄▄▄▄▄▄▄███▄██▄███████████',
+        '█████████████████████████████',
+        '▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀',
+        'hello',
+    ]) + '\n'
+
+
+def test_main_error(monkeypatch, tmp_path, capsys):
+    hello_svg = tmp_path / 'hello.svg'
+    hello_svg.write_text('this is not an SVG file\n')
+    monkeypatch.setattr(sys, 'argv', ['qr2text', str(hello_svg)])
+    with pytest.raises(SystemExit) as exc:
+        main()
+    assert exc.value.code == 1
+    assert capsys.readouterr().err == '\n'.join([
+        f"{hello_svg}: Couldn't parse SVG: syntax error: line 1, column 0",
+    ]) + '\n'
+
+
+def raise_keyboard_interrupt(*args, **kw):
+    raise KeyboardInterrupt
+
+
+def test_main_interrupt(monkeypatch, tmp_path, capsys):
+    hello_svg = tmp_path / 'hello.svg'
+    hello_svg.write_text('this is not an SVG file\n')
+    monkeypatch.setattr(sys, 'argv', ['qr2text', str(hello_svg)])
+    monkeypatch.setattr(QR, 'from_svg', raise_keyboard_interrupt)
+    with pytest.raises(SystemExit) as exc:
+        main()
+    assert exc.value.code == 1
+    assert capsys.readouterr().err == '\n'.join([
+        "^C",
+    ]) + '\n'

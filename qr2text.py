@@ -256,7 +256,10 @@ class QR:
 
     @classmethod
     def from_svg(cls, fileobj: FileNameOrFileObject) -> 'QR':
-        tree = xml.etree.ElementTree.parse(fileobj)
+        try:
+            tree = xml.etree.ElementTree.parse(fileobj)
+        except xml.etree.ElementTree.ParseError as e:
+            raise Error(f"Couldn't parse SVG: {e}")
         root = tree.getroot()
         if root.tag != f"{SVG_NS}svg":
             raise Error(f"This is not an SVG image: <{root.tag}>")
@@ -358,10 +361,13 @@ def main() -> None:
                 if data:
                     print(data.decode(errors='replace'))
             sys.stdout.flush()
-    except (Error, KeyboardInterrupt) as e:
-        sys.exit(e)
-    else:
-        sys.exit(rc)
+    except KeyboardInterrupt:
+        print("^C", file=sys.stderr)
+        rc = 1
+    except Error as e:  # pragma: nocover -- currently this cannot happen
+        print(e, file=sys.stderr)
+        rc = 1
+    sys.exit(rc)
 
 
 if __name__ == "__main__":
