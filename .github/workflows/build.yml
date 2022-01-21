@@ -27,6 +27,9 @@ jobs:
           - "pypy3"
 
     steps:
+      - name: Install OS dependencies
+        run: sudo apt-get update && sudo apt-get install -y libzbar0
+
       - name: Git clone
         uses: actions/checkout@v2
 
