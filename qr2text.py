@@ -12,7 +12,7 @@ import xml.etree.ElementTree
 from typing import BinaryIO, Iterable, List, Optional, Tuple, Union
 
 
-__version__ = '0.2'
+__version__ = '1.0.0'
 
 
 class Error(Exception):

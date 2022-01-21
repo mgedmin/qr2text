@@ -8,4 +8,5 @@ coverage:                       ##: measure test coverage
 
 
 FILE_WITH_VERSION = qr2text.py
+check_recipe = TOX_SKIP_ENV=check-manifest tox -p auto
 include release.mk
