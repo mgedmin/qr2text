@@ -8,9 +8,8 @@ import argparse
 import os
 import re
 import sys
-import typing
 import xml.etree.ElementTree
-from typing import Iterable, List, Optional, Tuple, Union
+from typing import BinaryIO, Iterable, List, Optional, Tuple, Union
 
 
 __version__ = '0.2'
@@ -32,6 +31,7 @@ TRANSFORM_SCALE_RX = re.compile(f'^scale[(]({FLOAT_REGEX})[)]$')
 
 Token = Tuple[str, str]
 PathCommand = Tuple[str, Tuple[float, ...]]
+FileNameOrFileObject = Union[os.PathLike, BinaryIO]
 
 
 class PathParser:
@@ -88,7 +88,7 @@ class PathParser:
 class Canvas:
 
     def __init__(self, width: int, height: int,
-                 pixels: List[List[int]] = None) -> None:
+                 pixels: Optional[List[List[int]]] = None) -> None:
         assert width >= 0
         assert height >= 0
         self.width = width
@@ -220,12 +220,18 @@ class Path:
 
 class QR:
 
-    def __init__(self, size) -> None:
+    def __init__(self, size: int) -> None:
         self.size = size
         self.canvas = Canvas(size, size)
 
-    def to_ascii_art(self, chars=HALF_CHARS, big=False, trim=False, pad=0,
-                     invert=False) -> str:
+    def to_ascii_art(
+        self,
+        chars: str = HALF_CHARS,
+        big: bool = False,
+        trim: bool = False,
+        pad: int = 0,
+        invert: bool = False,
+    ) -> str:
         canvas = self.canvas
         if trim:
             canvas = canvas.trim()
@@ -247,7 +253,7 @@ class QR:
         return float(value)
 
     @classmethod
-    def from_svg(cls, fileobj: Union[os.PathLike, typing.BinaryIO]) -> 'QR':
+    def from_svg(cls, fileobj: FileNameOrFileObject) -> 'QR':
         tree = xml.etree.ElementTree.parse(fileobj)
         root = tree.getroot()
         if root.tag != f"{SVG_NS}svg":
@@ -303,6 +309,7 @@ class QR:
         assert 0 <= len(res) <= 1
         if not res:
             return None
+        assert isinstance(res[0].data, bytes)  # for mypy
         return res[0].data
 
 
