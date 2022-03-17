@@ -6,6 +6,8 @@ Changelog
 
 - New command-line argument: ``--encode-text``.
 
+- Drop support for Python 3.6.
+
 
 1.0.1 (2022-01-21)
 ------------------
@@ -20,4 +22,4 @@ Changelog
 1.0.0 (2022-01-21)
 ------------------
 
-- First public release
+- First public release.
