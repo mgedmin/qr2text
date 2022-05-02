@@ -60,7 +60,7 @@ Synopsis::
     positional arguments:
       filename              SVG file with the QR code (use - for stdin)
 
-    optional arguments:
+    options:
       -h, --help            show this help message and exit
       --version             show program's version number and exit
       --black-background    terminal is white on black (default)
