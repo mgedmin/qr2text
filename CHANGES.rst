@@ -6,6 +6,8 @@ Changelog
 
 - New command-line argument: ``--encode-text``.
 
+- Add  support for Python 3.11.
+
 - Drop support for Python 3.6.
 
 
