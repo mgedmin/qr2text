@@ -42,8 +42,10 @@ Note: for QR code decoding to work you need to have libzbar installed on your
 system (e.g. ``sudo apt install libzbar0`` on Ubuntu).
 
 .. [[[cog
-..   import cog, subprocess, textwrap
-..   helptext = subprocess.run(['qr2text', '--help'], capture_output=True, text=True).stdout
+..   import cog, subprocess, textwrap, os
+..   os.environ['COLUMNS'] = '80'  # consistent line wrapping
+..   helptext = subprocess.run(['qr2text', '--help'],
+..                             capture_output=True, text=True).stdout
 ..   cog.outl('\nSynopsis::\n')
 ..   cog.outl(textwrap.indent(helptext, '    '))
 ..   # Run `tox -e cog -- -r` to re-generate the README.
