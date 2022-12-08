@@ -48,7 +48,7 @@ system (e.g. ``sudo apt install libzbar0`` on Ubuntu).
 ..                             capture_output=True, text=True).stdout
 ..   cog.outl('\nSynopsis::\n')
 ..   cog.outl(textwrap.indent(helptext, '    '))
-..   # Run `tox -e cog -- -r` to re-generate the README.
+..   # Run `tox -e cog-apply` to re-generate the README.
 .. ]]]
 
 Synopsis::
