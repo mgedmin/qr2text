@@ -25,6 +25,7 @@ jobs:
           - "3.9"
           - "3.10"
           - "3.11"
+          - "3.12"
           - "pypy-3.7"
 
     steps:
@@ -32,7 +33,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libzbar0
 
       - name: Git clone
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -59,14 +60,14 @@ jobs:
         run: coverage run -m pytest
 
       - name: Check test coverage
-        run: coverage report -m --fail-under=100
+        run: |
+          coverage report -m --fail-under=100
+          coverage xml
 
       - name: Report to coveralls
-        run: coveralls
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_SERVICE_NAME: github
+        uses: coverallsapp/github-action@v2
+        with:
+          file: coverage.xml
 
   lint:
     name: ${{ matrix.toxenv }}
@@ -84,7 +85,7 @@ jobs:
 
     steps:
       - name: Git clone
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python ${{ env.default_python || '3.10' }}
         uses: actions/setup-python@v4
