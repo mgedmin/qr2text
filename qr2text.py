@@ -39,7 +39,7 @@ TRANSFORM_SCALE_RX = re.compile(f'^scale[(]({FLOAT_REGEX})[)]$')
 
 Token = Tuple[str, str]
 PathCommand = Tuple[str, Tuple[float, ...]]
-FileNameOrFileObject = Union[os.PathLike, BinaryIO]
+FileNameOrFileObject = Union['os.PathLike[str]', BinaryIO]
 
 
 class PathParser:
