@@ -34,7 +34,6 @@ setup(
         "Environment :: Console",
         "License :: OSI Approved :: GNU General Public License (GPL)",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
@@ -45,7 +44,7 @@ setup(
         "Programming Language :: Python :: Implementation :: PyPy",
     ],
     license="GPL",
-    python_requires=">=3.7",
+    python_requires=">=3.8",
 
     py_modules=["qr2text"],
     zip_safe=False,
