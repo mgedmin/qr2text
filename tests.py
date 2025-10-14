@@ -1,5 +1,5 @@
 import sys
-from io import BytesIO
+from io import BytesIO, TextIOWrapper
 
 import pyqrcode
 import pytest
@@ -295,6 +295,35 @@ def test_main(monkeypatch, tmp_path, capsys):
     filename = str(tmp_path / 'hello.svg')
     pyqrcode.create('hello').svg(filename)
     monkeypatch.setattr(sys, 'argv', ['qr2text', filename])
+    with pytest.raises(SystemExit) as exc:
+        main()
+    assert exc.value.code == 0
+    assert capsys.readouterr().out == '\n'.join([
+        '█████████████████████████████',
+        '█████████████████████████████',
+        '████ ▄▄▄▄▄ █████▄█ ▄▄▄▄▄ ████',
+        '████ █   █ █ ▄▀▄██ █   █ ████',
+        '████ █▄▄▄█ ███ ▄▄█ █▄▄▄█ ████',
+        '████▄▄▄▄▄▄▄█▄▀ ▀▄█▄▄▄▄▄▄▄████',
+        '████▀█▀▄▄▀▄ █  ▄██▀▀▀  ██████',
+        '████  █▄▀ ▄▀▄ █▄▀ █ ▀█ ▄▄████',
+        '█████▄██▄▄▄▄ █▀█▀▀ ▄▄ █ █████',
+        '████ ▄▄▄▄▄ █▄▀ ▀█▀▄██▀ ▀▀████',
+        '████ █   █ █ █ ▀ ▀██ ▄█▄▄████',
+        '████ █▄▄▄█ ██▀  ▀        ████',
+        '████▄▄▄▄▄▄▄███▄██▄███████████',
+        '█████████████████████████████',
+        '▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀',
+        'hello',
+    ]) + '\n'
+
+
+def test_main_read_stdin(monkeypatch, tmp_path, capsys):
+    buffer = BytesIO()
+    pyqrcode.create('hello').svg(buffer)
+    buffer.seek(0)
+    monkeypatch.setattr(sys, 'argv', ['qr2text', '-'])
+    monkeypatch.setattr(sys, 'stdin', TextIOWrapper(buffer))
     with pytest.raises(SystemExit) as exc:
         main()
     assert exc.value.code == 0

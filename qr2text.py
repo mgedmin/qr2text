@@ -5,6 +5,7 @@ for displaying in a terminal.
 """
 
 import argparse
+import contextlib
 import os
 import re
 import sys
@@ -337,6 +338,13 @@ class QR:
         return res[0].data
 
 
+def open_arg(filename: str) -> contextlib.AbstractContextManager[BinaryIO]:
+    if filename == '-':
+        return contextlib.nullcontext(sys.stdin.buffer)
+    else:
+        return open(filename, 'rb')
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Convert PyQRCode SVG images to ASCII art")
@@ -365,7 +373,7 @@ def main() -> None:
                         help="don't decode the QR codes")
     parser.add_argument("--encode-text", action="append",
                         help="generate a QR code with given text")
-    parser.add_argument("filename", type=argparse.FileType('rb'), nargs='*',
+    parser.add_argument("filename", nargs='*',
                         help='SVG file with the QR code (use - for stdin)')
     args = parser.parse_args()
 
@@ -379,11 +387,11 @@ def main() -> None:
             qr = QR.from_text(text)
             yield qr
         for filename in args.filename:
-            with filename as fp:
+            with open_arg(filename) as fp:
                 try:
                     qr = QR.from_svg(fp)
                 except Error as e:
-                    print(f"{filename.name}: {e}", file=sys.stderr, flush=True)
+                    print(f"{filename}: {e}", file=sys.stderr, flush=True)
                     nonlocal rc
                     rc = 1
                 else:
