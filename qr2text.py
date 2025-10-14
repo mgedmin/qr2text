@@ -21,7 +21,7 @@ except ImportError:  # pragma: nocover
     pyzbar = None
 
 
-__version__ = '1.1.2.dev0'
+__version__ = '1.1.2'
 
 
 class Error(Exception):
