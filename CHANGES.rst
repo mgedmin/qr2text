@@ -4,7 +4,7 @@ Changelog
 1.1.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Drop support for Python 3.9.
 
 
 1.1.2 (2025-10-14)
