@@ -10,7 +10,7 @@ import os
 import re
 import sys
 import xml.etree.ElementTree
-from typing import BinaryIO, Iterable, List, Optional, Tuple, Union
+from typing import BinaryIO, Iterable
 
 import pyqrcode
 
@@ -38,9 +38,9 @@ FLOAT_REGEX = r'[-+]?(?:\d*\.\d+|\d+)(?:[eE][-+]?\d+)?'
 TRANSFORM_SCALE_RX = re.compile(f'^scale[(]({FLOAT_REGEX})[)]$')
 
 
-Token = Tuple[str, str]
-PathCommand = Tuple[str, Tuple[float, ...]]
-FileNameOrFileObject = Union['os.PathLike[str]', BinaryIO]
+Token = tuple[str, str]
+PathCommand = tuple[str, tuple[float, ...]]
+FileNameOrFileObject = os.PathLike[str] | BinaryIO
 
 
 class PathParser:
@@ -58,7 +58,7 @@ class PathParser:
     )
 
     @classmethod
-    def tokenize(cls, path: str) -> Iterable[Tuple[str, str]]:
+    def tokenize(cls, path: str) -> Iterable[tuple[str, str]]:
         for m in cls.TOKEN_RX.finditer(path):
             kind = m.lastgroup
             value = m.group()
@@ -73,8 +73,8 @@ class PathParser:
 
     @classmethod
     def parse(cls, path: str) -> Iterable[PathCommand]:
-        command = None
-        args: List[float] = []
+        command: str | None = None
+        args: list[float] = []
         for kind, value in cls.tokenize(path):
             if kind == 'command':
                 if command:
@@ -96,8 +96,9 @@ class PathParser:
 
 class Canvas:
 
-    def __init__(self, width: int, height: int,
-                 pixels: Optional[List[List[int]]] = None) -> None:
+    def __init__(
+        self, width: int, height: int, pixels: list[list[int]] | None = None
+    ) -> None:
         assert width >= 0
         assert height >= 0
         self.width = width
@@ -121,8 +122,12 @@ class Canvas:
                 if 0 <= x < self.width:
                     self.pixels[y][x] = 1
 
-    def to_bytes(self, values: Tuple[bytes, bytes] = (b'\xFF', b'\0'),
-                 xscale: int = 1, yscale: int = 1) -> bytes:
+    def to_bytes(
+        self,
+        values: tuple[bytes, bytes] = (b'\xff', b'\0'),
+        xscale: int = 1,
+        yscale: int = 1,
+    ) -> bytes:
         return b''.join(
             b''.join(values[px] * xscale for px in row) * yscale
             for row in self.pixels
@@ -319,7 +324,7 @@ class QR:
         Path(qr.canvas).draw(PathParser.parse(d))
         return qr
 
-    def decode(self) -> Optional[bytes]:
+    def decode(self) -> bytes | None:
         if pyzbar is None:
             return None
 
